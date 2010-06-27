@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/test_helper'
+require File.expand_path('../test_helper', __FILE__)
 
 ActiveRecord::Base.establish_connection :adapter => 'sqlite3', :database => ':memory:'
 
@@ -25,7 +25,7 @@ class Person < ActiveRecord::Base
   def after_initialize
     self.salt ||= Digest::SHA256.hexdigest((Time.now.to_i * rand(5)).to_s)
     self.credentials ||= { :username => 'example', :password => 'test' }
-  rescue ActiveRecord::MissingAttributeError
+  rescue ActiveModel::MissingAttributeError
   end
 end
 

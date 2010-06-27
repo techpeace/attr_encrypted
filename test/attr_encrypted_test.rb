@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/test_helper'
+require File.expand_path('../test_helper', __FILE__)
 require 'mocha'
 
 class SillyEncryptor
@@ -93,10 +93,10 @@ class AttrEncryptedTest < Test::Unit::TestCase
   
   def test_should_encrypt_email_when_modifying_the_attr_writer
     @user = User.new
-    assert_nil @user.encrypted_email
+    assert_nil @user.send(:encrypted_email)
     @user.email = 'test@example.com'
-    assert_not_nil @user.encrypted_email
-    assert_equal User.encrypt_email('test@example.com'), @user.encrypted_email
+    assert_not_nil @user.send(:encrypted_email)
+    assert_equal User.encrypt_email('test@example.com'), @user.send(:encrypted_email)
   end
   
   def test_should_not_decrypt_nil_value
@@ -116,7 +116,7 @@ class AttrEncryptedTest < Test::Unit::TestCase
   def test_should_decrypt_email_when_reading
     @user = User.new
     assert_nil @user.email
-    @user.encrypted_email = User.encrypt_email('test@example.com')
+    @user.send(:encrypted_email=, User.encrypt_email('test@example.com'))
     assert_equal 'test@example.com', @user.email
   end
   
@@ -127,7 +127,7 @@ class AttrEncryptedTest < Test::Unit::TestCase
   def test_should_decrypt_with_encoding
     encrypted = User.encrypt_with_encoding('test')
     assert_equal 'test', User.decrypt_with_encoding(encrypted)
-    assert_equal User.decrypt_with_encoding(encrypted), User.decrypt_without_encoding(encrypted.unpack('m*').to_s)
+    assert_equal User.decrypt_with_encoding(encrypted), User.decrypt_without_encoding(encrypted.unpack('m')[0])
   end
   
   def test_should_encrypt_with_custom_encoding
@@ -137,21 +137,21 @@ class AttrEncryptedTest < Test::Unit::TestCase
   def test_should_decrypt_with_custom_encoding
     encrypted = User.encrypt_with_encoding('test')
     assert_equal 'test', User.decrypt_with_encoding(encrypted)
-    assert_equal User.decrypt_with_encoding(encrypted), User.decrypt_without_encoding(encrypted.unpack('m').to_s)
+    assert_equal User.decrypt_with_encoding(encrypted), User.decrypt_without_encoding(encrypted.unpack('m')[0])
   end
   
   def test_should_encrypt_with_marshaling
     @user = User.new
     @user.with_marshaling = [1, 2, 3]
-    assert_not_nil @user.encrypted_with_marshaling
-    assert_equal User.encrypt_with_marshaling([1, 2, 3]), @user.encrypted_with_marshaling
+    assert_not_nil @user.send(:encrypted_with_marshaling)
+    assert_equal User.encrypt_with_marshaling([1, 2, 3]), @user.send(:encrypted_with_marshaling)
   end
   
   def test_should_decrypt_with_marshaling
     encrypted = User.encrypt_with_marshaling([1, 2, 3])
     @user = User.new
     assert_nil @user.with_marshaling
-    @user.encrypted_with_marshaling = encrypted
+    @user.send(:encrypted_with_marshaling=, encrypted)
     assert_equal [1, 2, 3], @user.with_marshaling
   end
   
@@ -161,26 +161,26 @@ class AttrEncryptedTest < Test::Unit::TestCase
   
   def test_should_evaluate_a_key_passed_as_a_symbol
     @user = User.new
-    assert_nil @user.ssn_encrypted
+    assert_nil @user.send(:ssn_encrypted)
     @user.ssn = 'testing'
-    assert_not_nil @user.ssn_encrypted
-    assert_equal Encryptor.encrypt(:value => 'testing', :key => @user.salt), @user.ssn_encrypted
+    assert_not_nil @user.send(:ssn_encrypted)
+    assert_equal Encryptor.encrypt(:value => 'testing', :key => @user.salt), @user.send(:ssn_encrypted)
   end
   
   def test_should_evaluate_a_key_passed_as_a_proc
     @user = User.new
-    assert_nil @user.crypted_password_test
+    assert_nil @user.send(:crypted_password_test)
     @user.password = 'testing'
-    assert_not_nil @user.crypted_password_test
-    assert_equal Encryptor.encrypt(:value => 'testing', :key => 'User'), @user.crypted_password_test
+    assert_not_nil @user.send(:crypted_password_test)
+    assert_equal Encryptor.encrypt(:value => 'testing', :key => 'User'), @user.send(:crypted_password_test)
   end
   
   def test_should_use_options_found_in_the_attr_encrypted_options_attribute
     @user = User.new
-    assert_nil @user.crypted_password_test
+    assert_nil @user.send(:crypted_password_test)
     @user.password = 'testing'
-    assert_not_nil @user.crypted_password_test
-    assert_equal Encryptor.encrypt(:value => 'testing', :key => 'User'), @user.crypted_password_test
+    assert_not_nil @user.send(:crypted_password_test)
+    assert_equal Encryptor.encrypt(:value => 'testing', :key => 'User'), @user.send(:crypted_password_test)
   end
   
   def test_should_inherit_encrypted_attributes
@@ -219,34 +219,34 @@ class AttrEncryptedTest < Test::Unit::TestCase
   
   def test_should_encrypt_with_true_if
     @user = User.new
-    assert_nil @user.encrypted_with_true_if
+    assert_nil @user.send(:encrypted_with_true_if)
     @user.with_true_if = 'testing'
-    assert_not_nil @user.encrypted_with_true_if
-    assert_equal Encryptor.encrypt(:value => 'testing', :key => 'secret key'), @user.encrypted_with_true_if
+    assert_not_nil @user.send(:encrypted_with_true_if)
+    assert_equal Encryptor.encrypt(:value => 'testing', :key => 'secret key'), @user.send(:encrypted_with_true_if)
   end
   
   def test_should_not_encrypt_with_false_if
     @user = User.new
-    assert_nil @user.encrypted_with_false_if
+    assert_nil @user.send(:encrypted_with_false_if)
     @user.with_false_if = 'testing'
-    assert_not_nil @user.encrypted_with_false_if
-    assert_equal 'testing', @user.encrypted_with_false_if
+    assert_not_nil @user.send(:encrypted_with_false_if)
+    assert_equal 'testing', @user.send(:encrypted_with_false_if)
   end
   
   def test_should_encrypt_with_false_unless
     @user = User.new
-    assert_nil @user.encrypted_with_false_unless
+    assert_nil @user.send(:encrypted_with_false_unless)
     @user.with_false_unless = 'testing'
-    assert_not_nil @user.encrypted_with_false_unless
-    assert_equal Encryptor.encrypt(:value => 'testing', :key => 'secret key'), @user.encrypted_with_false_unless
+    assert_not_nil @user.send(:encrypted_with_false_unless)
+    assert_equal Encryptor.encrypt(:value => 'testing', :key => 'secret key'), @user.send(:encrypted_with_false_unless)
   end
   
   def test_should_not_encrypt_with_true_unless
     @user = User.new
-    assert_nil @user.encrypted_with_true_unless
+    assert_nil @user.send(:encrypted_with_true_unless)
     @user.with_true_unless = 'testing'
-    assert_not_nil @user.encrypted_with_true_unless
-    assert_equal 'testing', @user.encrypted_with_true_unless
+    assert_not_nil @user.send(:encrypted_with_true_unless)
+    assert_equal 'testing', @user.send(:encrypted_with_true_unless)
   end
   
   def test_should_work_with_aliased_attr_encryptor
@@ -266,7 +266,7 @@ class AttrEncryptedTest < Test::Unit::TestCase
     @user.should_encrypt = false
     @user.with_if_changed = "not_encrypted_stuff"
     assert_equal "not_encrypted_stuff", @user.with_if_changed
-    assert_equal "not_encrypted_stuff", @user.encrypted_with_if_changed
+    assert_equal "not_encrypted_stuff", @user.send(:encrypted_with_if_changed)
   end
   
 end

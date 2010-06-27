@@ -7,4 +7,4 @@ require 'active_record'
 require 'datamapper'
 require 'sequel'
 
-require File.dirname(__FILE__) + '/../lib/attr_encrypted'
+require File.expand_path('../../lib/attr_encrypted', __FILE__)
