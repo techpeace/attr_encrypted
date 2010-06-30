@@ -25,7 +25,9 @@ class Person < ActiveRecord::Base
   def after_initialize
     self.salt ||= Digest::SHA256.hexdigest((Time.now.to_i * rand(5)).to_s)
     self.credentials ||= { :username => 'example', :password => 'test' }
-  rescue ActiveModel::MissingAttributeError
+  # Should be ActiveRecord::MissingAttributeError, however Rails 3 has this in ActiveModel,
+  # so that let's intecept everything until find better solution.
+  rescue
   end
 end
 
