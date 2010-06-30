@@ -143,8 +143,10 @@ module AttrEncrypted
         
         encrypted_attributes[attribute.to_s] = encrypted_attribute_name
         
-        attr_reader encrypted_attribute_name.to_sym unless instance_methods.include?(encrypted_attribute_name.to_sym)
-        attr_writer encrypted_attribute_name.to_sym unless instance_methods.include?("#{encrypted_attribute_name}=".to_sym)
+        # TODO: IMO there is too many #to_sym calls all over the code, this should be refactored.
+        instance_methods_as_symbols = RUBY_VERSION < '1.9' ? instance_methods.map(&:to_sym) : instance_methods
+        attr_reader encrypted_attribute_name.to_sym unless instance_methods_as_symbols.include?(encrypted_attribute_name.to_sym)
+        attr_writer encrypted_attribute_name.to_sym unless instance_methods_as_symbols.include?("#{encrypted_attribute_name}=".to_sym)
         
         define_class_method "encrypt_#{attribute}" do |value|
           if options[:if] && !options[:unless]
