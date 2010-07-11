@@ -87,7 +87,7 @@ class ActiveRecordTest < Test::Unit::TestCase
   def test_should_validate_presence_of_email
     @person = PersonWithValidation.new
     assert !@person.valid?
-    assert @person.errors.on(:email)
+    assert ![nil, []].include?(@person.errors[:email])
   end
   
   def test_should_validate_uniqueness_of_email
@@ -95,7 +95,7 @@ class ActiveRecordTest < Test::Unit::TestCase
     assert @person.save
     @person2 = PersonWithValidation.new :email => @person.email
     assert !@person2.valid?
-    assert @person2.errors.on(:encrypted_email)
+    assert ![nil, []].include?(@person2.errors[:encrypted_email])
   end
-  
+
 end
