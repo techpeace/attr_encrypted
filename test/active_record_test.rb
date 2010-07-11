@@ -27,7 +27,8 @@ class Person < ActiveRecord::Base
     self.credentials ||= { :username => 'example', :password => 'test' }
   # Should be ActiveRecord::MissingAttributeError, however Rails 3 has this in ActiveModel,
   # so that let's intecept everything until find better solution.
-  rescue
+  rescue Exception => e
+    raise unless ['ActiveRecord::MissingAttributeError', 'ActiveModel::MissingAttributeError'].include? e.class.to_s
   end
 end
 
